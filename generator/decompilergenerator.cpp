@@ -387,6 +387,7 @@ void DecompilerGenerator::generateDecompiler()
 
     cdecl.methods([this](QList<MethodDeclarationStatement*>& methodlist) {
         MethodDeclarationStatement* mds = new MethodDeclarationStatement("void", "decompile", MethodDeclarationStatement::VIRTUAL);
+        mds->addArgument("int", "dcid");
         mds->addArgument("int", "direction");
         mds->addArgument("TLLong", "messageid");
         mds->addArgument("const QByteArray&", "data");
@@ -437,11 +438,11 @@ void DecompilerGenerator::generateDecompiler()
         ifs = IfStatement("direction");
 
         ifs.addIf("==", "MTProtoDecompiler::DIRECTION_IN", [](QString& body) {
-            body += "qDebug().noquote() << \"IN\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
+            body += "qDebug().noquote() << \"DC\" << dcid << \"IN\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
         });
 
         ifs.addIf("==", "MTProtoDecompiler::DIRECTION_OUT", [](QString& body) {
-            body += "qDebug().noquote() << \"OUT\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
+            body += "qDebug().noquote() << \"DC\" << dcid << \"OUT\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
         });
 
         body += ifs.toString() + "\n";
