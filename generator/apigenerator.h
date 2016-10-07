@@ -12,7 +12,7 @@ class APIGenerator : public BasicGenerator
 
     private:
         void compileFlags(const SchemaItem::SchemaFields& fields, QString& body);
-        void writeAPIArgument(const SchemaItem::SchemaField field, QString& body);
+        void writeAPIArgument(const SchemaItem::SchemaField &field, QString& body);
 
     private:
         QString _name;

@@ -227,8 +227,17 @@ void DecompilerGenerator::typeDispatcher(QString &body, const SchemaItem *item, 
     body += "\tQ_UNUSED(thethis);\n";
     body += "TLConstructor ctor = mtstream.readTLConstructor();\n\n";
 
-    AssertStatement asrt("ctor");
     IfStatement ifs("ctor");
+
+    ifs.addIf("==", "TLTypes::Null", [](QString& body) {
+        body += "result.append(\"Null\");\n";
+        body += "return;\n";
+    });
+
+    body += ifs.toString() +"\n\n";
+
+    AssertStatement asrt("ctor");
+    ifs = IfStatement("ctor");
 
     foreach(const SchemaItem* ctoritem, constructors[item->name()])
     {
@@ -461,7 +470,7 @@ void DecompilerGenerator::generateDecompiler()
         ifs = IfStatement();
 
         ifs.addIf("!MTProtoDecompiler::_ctordispatcher.contains(ctor)", [](QString& body) {
-            body += "qWarning(\"-- (%08x) Invalid constructor: 0x%08X\", messageid, ctor);\n";
+            body += "qWarning(\"-- (%llx) Invalid constructor: 0x%08x\", messageid, ctor);\n";
             body += "return;";
         });
 

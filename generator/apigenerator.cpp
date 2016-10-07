@@ -101,12 +101,23 @@ void APIGenerator::compileFlags(const SchemaItem::SchemaFields &fields, QString 
     }
 }
 
-void APIGenerator::writeAPIArgument(const SchemaItem::SchemaField field, QString &body)
+void APIGenerator::writeAPIArgument(const SchemaItem::SchemaField& field, QString &body)
 {
     if(IS_FIELD_BASIC_TYPE(field))
         body += "mtstream->write" + field.type + "(" + field.name.toLower() + ");\n";
     else if(IS_FIELD_VECTOR(field))
         body += "mtstream->writeTLVector(" + field.name.toLower() + ");\n";
     else
-        body += field.name.toLower() + "->write(mtstream);\n";
+    {
+        IfStatement ifs;
+        ifs.addIf(field.name.toLower(), [field](QString& body) {
+            body += field.name.toLower() + "->write(mtstream);\n";
+        });
+
+        ifs.setElse([](QString& body) {
+            body += "mtstream->writeTLConstructor(TLTypes::Null);\n";
+        });
+
+        body += ifs.toString() + "\n";
+    }
 }

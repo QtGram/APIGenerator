@@ -292,8 +292,22 @@ void TypeGenerator::readField(const SchemaItem::SchemaField &field, QString &bod
     }
     else
     {
-        body += "RESET_TLTYPE(" + field.type + ", this->_" + field.name.toLower() + ");\n";
-        body += "this->_" + field.name.toLower() + "->read(mtstream);\n";
+        QString varname = field.name.toLower() + "_ctor";
+        body += "TLInt " + varname + " = mtstream->peekTLConstructor();\n\n";
+
+        IfStatement ifs(varname);
+
+        ifs.addIf("!=", "TLTypes::Null", [field](QString& body) {
+            body += "RESET_TLTYPE(" + field.type + ", this->_" + field.name.toLower() + ");\n";
+            body += "this->_" + field.name.toLower() + "->read(mtstream);\n";
+        });
+
+        ifs.setElse([field](QString& body) {
+            body += "NULL_TLTYPE(this->_" + field.name.toLower() + ");\n";
+            body += "mtstream->readTLConstructor(); // Skip Null";
+        });
+
+        body += ifs.toString() + "\n";
     }
 }
 
@@ -308,7 +322,16 @@ void TypeGenerator::writeField(const SchemaItem::SchemaField &field, QString &bo
     }
     else
     {
-        body += "Q_ASSERT(this->_" + field.name.toLower() + " != NULL);\n";
-        body += "this->_" + field.name.toLower() + "->write(mtstream);\n";
+        IfStatement ifs("this->_" + field.name.toLower());
+
+        ifs.addIf("!=", "NULL", [field](QString& body) {
+            body += "this->_" + field.name.toLower() + "->write(mtstream);";
+        });
+
+        ifs.setElse([](QString& body) {
+            body += "mtstream->writeTLConstructor(TLTypes::Null);";
+        });
+
+        body += ifs.toString() + "\n";
     }
 }
