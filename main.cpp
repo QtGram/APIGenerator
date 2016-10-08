@@ -4,6 +4,7 @@
 #include <QDir>
 #include "schema/parser/schemaparser.h"
 #include "generator/enumgenerator.h"
+#include "generator/syncgenerator.h"
 #include "generator/typegenerator.h"
 #include "generator/apigenerator.h"
 #include "generator/decompilergenerator.h"
@@ -82,6 +83,9 @@ int main(int argc, char *argv[])
 
         APIGenerator apigen(schemasp.schema(), schemasp.constructors(), destdir.absolutePath());
         apigen.generate();
+
+        SyncGenerator syncgen(schemasp.schema(), schemasp.constructors(), destdir.absolutePath());
+        syncgen.generate();
     }
 
     if(parse(mtprotosp, mtproto))

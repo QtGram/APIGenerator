@@ -2,7 +2,7 @@
 #include "../schema/typeutils.h"
 #include <QDebug>
 
-EnumGenerator::EnumGenerator(const QStringList &mtproto, const QStringList &schema, const QString &destinationdir): BasicGenerator( destinationdir), _mtproto(mtproto), _schema(schema)
+EnumGenerator::EnumGenerator(const QStringList &mtproto, const QStringList &schema, const QString &destinationdir): BasicGenerator(destinationdir), _mtproto(mtproto), _schema(schema)
 {
 
 }
