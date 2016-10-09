@@ -6,13 +6,13 @@ ClassDeclarationStatement::ClassDeclarationStatement(const QString &name, const 
     this->_baseclass = "QObject";
     this->_lastmethodvisibility = ClassDeclarationStatement::NO_VISIBILITY;
     this->_lastfieldvisibility = ClassDeclarationStatement::NO_VISIBILITY;
-    this->_lastenumvisibility = ClassDeclarationStatement::NO_VISIBILITY;
 }
 
 ClassDeclarationStatement::~ClassDeclarationStatement()
 {
     qDeleteAll(this->_methodlist);
     qDeleteAll(this->_fieldlist);
+    qDeleteAll(this->_enumlist);
 }
 
 const QString &ClassDeclarationStatement::baseClass()
@@ -73,21 +73,7 @@ void ClassDeclarationStatement::properties(std::function<void(QList<PropertyDecl
 
 void ClassDeclarationStatement::enums(std::function<void (QList<EnumDeclarationStatement *> &)> enumproc)
 {
-    QList<EnumDeclarationStatement*> enums;
-    enumproc(enums);
-
-    foreach(EnumDeclarationStatement* enm, enums)
-    {
-        if(this->_lastenumvisibility != enm->visibility())
-        {
-            this->_enums += this->visibilityString(enm->visibility());
-            this->_lastenumvisibility = enm->visibility();
-        }
-
-        this->_enums += enm->toString();
-    }
-
-    qDeleteAll(enums);
+    enumproc(this->_enumlist);
 }
 
 void ClassDeclarationStatement::emitters(std::function<void(QList<QString> &)> emitsproc)
@@ -129,8 +115,7 @@ QString ClassDeclarationStatement::toString() const
     if(!this->_properties.isEmpty())
         content += this->_properties + "\n";
 
-    if(!this->_enums.isEmpty())
-        content += this->_enums + "\n";
+    this->generateEnums(content);
 
     if(!this->_methods.isEmpty())
         content += this->_methods + "\n";
@@ -143,6 +128,34 @@ QString ClassDeclarationStatement::toString() const
 
     content += "};\n";
     return content;
+}
+
+void ClassDeclarationStatement::generateEnums(QString &content) const
+{
+    if(this->_enumlist.isEmpty())
+        return;
+
+    foreach(const EnumDeclarationStatement* enumdecl, this->_enumlist)
+    {
+        if(enumdecl->visibility() != EnumDeclarationStatement::PUBLIC)
+            continue;
+
+        content += "\tQ_ENUMS(" + enumdecl->name() + ")\n";
+    }
+
+    content += "\n";
+    int lastenumvisibility = ClassDeclarationStatement::NO_VISIBILITY;
+
+    foreach(const EnumDeclarationStatement* enumdecl, this->_enumlist)
+    {
+        if(lastenumvisibility != enumdecl->visibility())
+        {
+            content += this->visibilityString(enumdecl->visibility());
+            lastenumvisibility = enumdecl->visibility();
+        }
+
+        content += enumdecl->toString() + "\n";
+    }
 }
 
 void ClassDeclarationStatement::methods(std::function<void(QList<MethodDeclarationStatement *>&)> methodsproc)

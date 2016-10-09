@@ -35,7 +35,8 @@ SOURCES += main.cpp \
     schema/parser/schemaparser.cpp \
     schema/parser/typeparser.cpp \
     schema/typeutils.cpp \
-    generator/syncgenerator.cpp
+    generator/syncgenerator.cpp \
+    generator/qmlgenerator.cpp
 
 HEADERS += \
     schema/tokenizer/schematokenizer.h \
@@ -65,4 +66,5 @@ HEADERS += \
     schema/parser/schemaparser.h \
     schema/parser/typeparser.h \
     schema/typeutils.h \
-    generator/syncgenerator.h
+    generator/syncgenerator.h \
+    generator/qmlgenerator.h

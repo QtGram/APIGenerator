@@ -6,6 +6,7 @@
 #include "generator/enumgenerator.h"
 #include "generator/syncgenerator.h"
 #include "generator/typegenerator.h"
+#include "generator/qmlgenerator.h"
 #include "generator/apigenerator.h"
 #include "generator/decompilergenerator.h"
 
@@ -86,6 +87,9 @@ int main(int argc, char *argv[])
 
         SyncGenerator syncgen(schemasp.schema(), schemasp.constructors(), destdir.absolutePath());
         syncgen.generate();
+
+        QmlGenerator qmlgen(schemasp.schema(), schemasp.constructors(), destdir.absolutePath());
+        qmlgen.generate();
     }
 
     if(parse(mtprotosp, mtproto))

@@ -28,20 +28,22 @@ class ClassDeclarationStatement: public AbstractStatement
         virtual QString toString() const;
 
     private:
+        void generateEnums(QString& content) const;
+
+    private:
         QList<MethodDeclarationStatement*> _methodlist;
         QList<FieldDeclarationStatement*> _fieldlist;
+        QList<EnumDeclarationStatement*> _enumlist;
         QHash<QString, ClassDeclarationStatement::PropertyType> _propertymap;
         QHash<QString, QString> _fieldmap;
         QSet<QString> _includeset;
         QString _baseclass;
         QString _properties;
-        QString _enums;
         QString _methods;
         QString _fields;
         QString _signals;
         int _lastmethodvisibility;
         int _lastfieldvisibility;
-        int _lastenumvisibility;
 
     friend class ClassDefinitionStatement;
     friend class MethodDefinitionStatement;
