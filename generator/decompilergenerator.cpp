@@ -204,7 +204,7 @@ void DecompilerGenerator::compileTLVectorDefinitions(QString &body)
             if(this->_manualitems.contains(ctoritem->name()))
                 continue;
 
-            QString enumval = ctoritem->name() + "::ctor" + ctoritem->ctor();
+            QString enumval = ctoritem->name() + "::Ctor" + ctoritem->ctor();
 
             ifs.addIf("==", enumval, [this, ctoritem](QString& ifbody) {
                 ifbody += "MTProtoDecompiler::decompile_" + ctoritem->name() + "(this, result, mtstream);\n";
@@ -241,7 +241,7 @@ void DecompilerGenerator::typeDispatcher(QString &body, const SchemaItem *item, 
 
     foreach(const SchemaItem* ctoritem, constructors[item->name()])
     {
-        QString enumval = item->name() + "::ctor" + ctoritem->ctor();
+        QString enumval = item->name() + "::Ctor" + ctoritem->ctor();
         asrt.addAssertion(enumval);
 
         ifs.addIf("==", enumval, [this, ctoritem, schema](QString& body) {

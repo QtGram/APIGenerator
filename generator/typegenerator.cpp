@@ -35,7 +35,7 @@ void TypeGenerator::generate()
             EnumDeclarationStatement* eds = new EnumDeclarationStatement("Constructors");
 
             foreach(SchemaItem* ctoritem, this->_constructors[item->name()])
-                eds->addEntry("ctor" + ctoritem->ctor(), "0x" + ctoritem->value());
+                eds->addEntry("Ctor" + ctoritem->ctor(), "0x" + ctoritem->value());
 
             enumlist << eds;
         });
@@ -108,7 +108,7 @@ void TypeGenerator::generate()
                 return;
 
             // Single constructors hardcode its id by default
-            QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::ctor" + item->ctor();
+            QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::Ctor" + item->ctor();
             body += "this->_constructorid = " + enumval + ";\n";
         });
 
@@ -119,7 +119,7 @@ void TypeGenerator::generate()
             IfStatement ifs("this->_constructorid");
 
             foreach(SchemaItem* ctoritem, this->_constructors[item->name()]) {
-                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::ctor" + ctoritem->ctor();
+                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::Ctor" + ctoritem->ctor();
                 asrt.addAssertion(enumval);
 
                 if(ctoritem->fields().isEmpty()) // Ignore parameter-less constructors
@@ -147,7 +147,7 @@ void TypeGenerator::generate()
                     needsflagreset = false;
                 }
 
-                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::ctor" + ctoritem->ctor();
+                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::Ctor" + ctoritem->ctor();
 
                 ifs.addIf("==", enumval, [this, ctoritem](QString& body) {
                     this->compileFlags(ctoritem, body);
@@ -162,7 +162,7 @@ void TypeGenerator::generate()
             IfStatement ifs("this->_constructorid");
 
             foreach(SchemaItem* ctoritem, this->_constructors[item->name()]) {
-                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::ctor" + ctoritem->ctor();
+                QString enumval = LAMBDA_POINTER_V(cdef)->name() + "::Ctor" + ctoritem->ctor();
                 asrt.addAssertion(enumval);
 
                 if(ctoritem->fields().isEmpty()) // Ignore parameter-less constructors
