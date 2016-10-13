@@ -39,7 +39,20 @@ QString MethodDefinitionStatement::toString() const
             content += "\tif(this->_" + fieldname + " == " + fieldname + ")\n";
             content += "\t\treturn;\n\n";
 
+            PropertyDeclarationStatement* property = this->_classdeclaration->_propertysetters[this->name()];
+
+            if(!property->isBasicType() && !property->isVector())
+                content+= "\tthis->deleteChild(this->_" + fieldname + ");\n";
+
             content += "\tthis->_" + fieldname + " = " + fieldname + ";\n";
+
+
+            if(!property->isBasicType() && !property->isVector())
+            {
+                content += "\n\tif(this->_" + fieldname + ")\n";
+                content += "\t\tthis->_" + fieldname + "->setParent(this);\n\n";
+            }
+
             content += "\temit " + this->camelCase(fieldname) + "Changed();\n";
         }
         else if(proptype == MethodDeclarationStatement::GETTER)

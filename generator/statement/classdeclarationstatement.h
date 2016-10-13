@@ -34,6 +34,7 @@ class ClassDeclarationStatement: public AbstractStatement
         QList<MethodDeclarationStatement*> _methodlist;
         QList<FieldDeclarationStatement*> _fieldlist;
         QList<EnumDeclarationStatement*> _enumlist;
+        QHash<QString, PropertyDeclarationStatement*> _propertysetters;
         QHash<QString, ClassDeclarationStatement::PropertyType> _propertymap;
         QHash<QString, QString> _fieldmap;
         QSet<QString> _includeset;

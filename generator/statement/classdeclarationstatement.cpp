@@ -13,6 +13,7 @@ ClassDeclarationStatement::~ClassDeclarationStatement()
     qDeleteAll(this->_methodlist);
     qDeleteAll(this->_fieldlist);
     qDeleteAll(this->_enumlist);
+    qDeleteAll(this->_propertysetters);
 }
 
 const QString &ClassDeclarationStatement::baseClass()
@@ -41,7 +42,8 @@ void ClassDeclarationStatement::properties(std::function<void(QList<PropertyDecl
 
         this->methods([this, property](QList<MethodDeclarationStatement*>& methods) {
             MethodDeclarationStatement* mds = NULL;
-            MethodDeclarationStatement::Attributes typeattributes = (!property->isBasicType() || property->isVector()) ?
+
+            MethodDeclarationStatement::Attributes typeattributes = property->isVector() ?
                                                                     MethodDeclarationStatement::CONST_BY_REFERENCE :
                                                                     MethodDeclarationStatement::NO_ATTRIBUTES;
 
@@ -57,6 +59,8 @@ void ClassDeclarationStatement::properties(std::function<void(QList<PropertyDecl
             this->_propertymap[mds->name()] = ClassDeclarationStatement::SETTER;
             this->_fieldmap[mds->name()] = property->name().toLower();
             methods << mds;
+
+            this->_propertysetters[mds->name()] = property;
         });
 
         this->emitters([property](QList<QString>& emits) {
@@ -67,8 +71,6 @@ void ClassDeclarationStatement::properties(std::function<void(QList<PropertyDecl
             fieldlist << new FieldDeclarationStatement(property->type(), "_" + property->name().toLower());
         });
     }
-
-    qDeleteAll(props);
 }
 
 void ClassDeclarationStatement::enums(std::function<void (QList<EnumDeclarationStatement *> &)> enumproc)

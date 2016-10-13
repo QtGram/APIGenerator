@@ -81,6 +81,7 @@ void TypeGenerator::generate()
         this->iterateFields(item, [this, LAMBDA_POINTER_V(cdecl)](const SchemaItem::SchemaField& field) {
             LAMBDA_POINTER_V(cdecl)->properties([this, field](QList<PropertyDeclarationStatement*>& proplist) {
                 PropertyDeclarationStatement* prop = new PropertyDeclarationStatement(this->decoratedType(field), field.name);
+                prop->setIsBasicType(IS_FIELD_BASIC_TYPE(field));
                 prop->setIsVector(IS_FIELD_VECTOR(field));
                 proplist << prop;
             });
@@ -286,7 +287,12 @@ void TypeGenerator::readField(const SchemaItem::SchemaField &field, QString &bod
     if(IS_FIELD_BASIC_TYPE(field) || IS_FIELD_VECTOR(field))
     {
         if(IS_FIELD_VECTOR(field))
-            body += "mtstream->readTLVector<" + field.vectortype + ">(this->_" + field.name.toLower() + ", " + BARE_TYPE_STRING(field) + ");\n";
+        {
+            if(!IS_FIELD_BASIC_TYPE(field))
+                body += "mtstream->readTLVector<" + field.vectortype + ">(this->_" + field.name.toLower() + ", " + BARE_TYPE_STRING(field) + ", this);\n";
+            else
+                body += "mtstream->readTLVector<" + field.vectortype + ">(this->_" + field.name.toLower() + ", " + BARE_TYPE_STRING(field) + ");\n";
+        }
         else
             body += "this->_" + field.name.toLower() + " = mtstream->read" + field.type + "();\n";
     }
@@ -298,12 +304,12 @@ void TypeGenerator::readField(const SchemaItem::SchemaField &field, QString &bod
         IfStatement ifs(varname);
 
         ifs.addIf("!=", "TLTypes::Null", [field](QString& body) {
-            body += "RESET_TLTYPE(" + field.type + ", this->_" + field.name.toLower() + ");\n";
+            body += "this->resetTLType<" + field.type + ">(&this->_" + field.name.toLower() + ");\n";
             body += "this->_" + field.name.toLower() + "->read(mtstream);\n";
         });
 
         ifs.setElse([field](QString& body) {
-            body += "NULL_TLTYPE(this->_" + field.name.toLower() + ");\n";
+            body += "this->nullTLType<" + field.type + ">(&this->_" + field.name.toLower() + ");\n";
             body += "mtstream->readTLConstructor(); // Skip Null";
         });
 
