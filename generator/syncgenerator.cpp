@@ -17,17 +17,53 @@ void SyncGenerator::generate()
         includelist << "types/updates.h";
         includelist << "types/update.h";
         includelist << "types/updatesstate.h";
+        includelist << "types/updatesstate.h";
+        includelist << "../config/telegramconfig.h";
     });
 
     cdecl.methods([](QList<MethodDeclarationStatement*>& methodlist) {
         MethodDeclarationStatement* mds = new MethodDeclarationStatement("void", "syncUpdate", MethodDeclarationStatement::STATIC);
         mds->addArgument("Update*", "u");
-        mds->addArgument("UpdatesState*", "updatestate");
+        mds->addArgument("UpdatesState*", "clientstate");
         methodlist << mds;
 
         mds = new MethodDeclarationStatement("void", "syncUpdates", MethodDeclarationStatement::STATIC);
         mds->addArgument("Updates*", "u");
-        mds->addArgument("UpdatesState*", "updatestate");
+        mds->addArgument("UpdatesState*", "clientstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncState", MethodDeclarationStatement::STATIC);
+        mds->addArgument("UpdatesState*", "serverstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncPts", MethodDeclarationStatement::STATIC);
+        mds->setVisibility(MethodDeclarationStatement::PRIVATE);
+        mds->addArgument("TLInt", "pts");
+        mds->addArgument("UpdatesState*", "clientstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncQts", MethodDeclarationStatement::STATIC);
+        mds->setVisibility(MethodDeclarationStatement::PRIVATE);
+        mds->addArgument("TLInt", "qts");
+        mds->addArgument("UpdatesState*", "clientstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncDate", MethodDeclarationStatement::STATIC);
+        mds->setVisibility(MethodDeclarationStatement::PRIVATE);
+        mds->addArgument("TLInt", "date");
+        mds->addArgument("UpdatesState*", "clientstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncSeq", MethodDeclarationStatement::STATIC);
+        mds->setVisibility(MethodDeclarationStatement::PRIVATE);
+        mds->addArgument("TLInt", "seq");
+        mds->addArgument("UpdatesState*", "clientstate");
+        methodlist << mds;
+
+        mds = new MethodDeclarationStatement("void", "syncUnreadCount", MethodDeclarationStatement::STATIC);
+        mds->setVisibility(MethodDeclarationStatement::PRIVATE);
+        mds->addArgument("TLInt", "unreadcount");
+        mds->addArgument("UpdatesState*", "clientstate");
         methodlist << mds;
     });
 
@@ -48,6 +84,52 @@ void SyncGenerator::generate()
             }
         }
     });
+
+    cdef.method("syncState", [this](QString& body) {
+        body += "UpdatesState* clientstate = TelegramConfig_clientState;\n\n";
+        body += "ClientSyncManager::syncPts(serverstate->pts(), clientstate);\n";
+        body += "ClientSyncManager::syncQts(serverstate->qts(), clientstate);\n";
+        body += "ClientSyncManager::syncDate(serverstate->date(), clientstate);\n";
+        body += "ClientSyncManager::syncSeq(serverstate->seq(), clientstate);\n";
+        body += "ClientSyncManager::syncUnreadCount(serverstate->unreadCount(), clientstate);\n";
+    });
+
+    cdef.method("syncPts", [this](QString& body) {
+        IfStatement ifs("pts");
+        ifs.addIf("<=", "clientstate->pts()", [](QString& body) { body += "return;"; });
+
+        body += ifs.toString() + "\n";
+        body += "clientstate->setPts(pts);\n";
+    });
+
+    cdef.method("syncQts", [this](QString& body) {
+        IfStatement ifs("qts");
+        ifs.addIf("<=", "clientstate->qts()", [](QString& body) { body += "return;"; });
+
+        body += ifs.toString() + "\n";
+        body += "clientstate->setQts(qts);\n";
+    });
+
+    cdef.method("syncDate", [this](QString& body) {
+        IfStatement ifs("date");
+        ifs.addIf("<=", "clientstate->date()", [](QString& body) { body += "return;"; });
+
+        body += ifs.toString() + "\n";
+        body += "clientstate->setDate(date);\n";
+    });
+
+    cdef.method("syncSeq", [this](QString& body) {
+        body += "clientstate->setSeq(seq); // NOTE: How to handle 'seq'?\n";
+    });
+
+    cdef.method("syncUnreadCount", [this](QString& body) {
+        IfStatement ifs("unreadcount");
+        ifs.addIf("<=", "clientstate->unreadCount()", [](QString& body) { body += "return;"; });
+
+        body += ifs.toString() + "\n";
+        body += "clientstate->setUnreadCount(unreadcount);\n";
+    });
+
 
     cdecl.write();
     cdef.write();
@@ -83,7 +165,7 @@ void SyncGenerator::syncItem(SchemaItem *ctoritem, QString& body)
         if(!isupdatefield)
             continue;
 
-        body += "updatestate->set" + TypeUtils::camelCase(schemafield.name, true) + "(u->" + schemafield.name + "());\n";
+        body += "ClientSyncManager::sync" + TypeUtils::camelCase(schemafield.name, true) + "(u->" + schemafield.name + "(), clientstate);\n";
     }
 }
 
