@@ -32,7 +32,10 @@ void APIGenerator::generate()
         methodlist << new MethodDeclarationStatement(LAMBDA_POINTER_V(cdecl)->name());
 
         foreach(const SchemaItem* item, this->_schema["functions"]) {
-           MethodDeclarationStatement* mds = new MethodDeclarationStatement("MTProtoRequest*", TypeUtils::apiCall(item->ctor()), MethodDeclarationStatement::STATIC);
+           MethodDeclarationStatement* mds = new MethodDeclarationStatement(this->_mtprotomode ? "void" : "MTProtoRequest*",
+                                                                            TypeUtils::apiCall(item->ctor()),
+                                                                            MethodDeclarationStatement::STATIC);
+
            mds->addArgument("DCSession*", "session");
 
            foreach(const SchemaItem::SchemaField& field, item->fields()) {
@@ -77,7 +80,7 @@ void APIGenerator::generate()
             }
 
             if(this->_mtprotomode)
-                body += "\nreturn session->sendPlain(mtstream);";
+                body += "\nsession->sendPlain(mtstream);";
             else
                 body += "\nreturn session->sendEncrypted(mtstream);";
         });
