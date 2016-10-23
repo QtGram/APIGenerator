@@ -467,7 +467,11 @@ void DecompilerGenerator::generateDecompiler()
         body += ifs.toString() + "\n";
         body += "TLConstructor ctor = mtstream.peekTLConstructor();\n\n";
 
-        ifs = IfStatement();
+        ifs = IfStatement("ctor");
+
+        ifs.addIf("==", "TLTypes::Vector", [](QString& body) {
+            body += "return;";
+        });
 
         ifs.addIf("!MTProtoDecompiler::_ctordispatcher.contains(ctor)", [](QString& body) {
             body += "qWarning(\"-- (%llx) Invalid constructor: 0x%08x\", messageid, ctor);\n";
