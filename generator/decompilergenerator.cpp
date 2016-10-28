@@ -447,11 +447,11 @@ void DecompilerGenerator::generateDecompiler()
         ifs = IfStatement("direction");
 
         ifs.addIf("==", "MTProtoDecompiler::DIRECTION_IN", [](QString& body) {
-            body += "qDebug().noquote() << \"DC\" << dcid << \"IN\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
+            body += "qDebug(\"DC %d IN (%16llx) %s\", dcid, messageid, qUtf8Printable(result));";
         });
 
         ifs.addIf("==", "MTProtoDecompiler::DIRECTION_OUT", [](QString& body) {
-            body += "qDebug().noquote() << \"DC\" << dcid << \"OUT\" << QString(\"(%1)\").arg(messageid, 16, 16, QLatin1Char('0')) << result;\n";
+            body += "qDebug(\"DC %d OUT (%16llx) %s\", dcid, messageid, qUtf8Printable(result));";
         });
 
         body += ifs.toString() + "\n";
