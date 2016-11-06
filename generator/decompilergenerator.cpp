@@ -89,11 +89,13 @@ void DecompilerGenerator::compileDispatchers(QString &body, const TelegramSchema
     {
         foreach(SchemaItem* item, schema[key])
         {
-            if(this->_manualitems.contains(item->name()))
-                continue;
-
             if(key == "types")
+            {
+                if(this->_manualitems.contains(item->name()))
+                    continue;
+
                 body += "MTProtoDecompiler::_ctordispatcher[TLTypes::" + item->ctor() + "] = &MTProtoDecompiler::decompile_" + item->name() + ";\n";
+            }
             else
                 body += "MTProtoDecompiler::_ctordispatcher[TLTypes::" + TypeUtils::apiCall(item->ctor()) + "] = &MTProtoDecompiler::decompile_" + TypeUtils::apiCall(item->ctor()) + ";\n";
         }
@@ -128,9 +130,6 @@ void DecompilerGenerator::compileDispatchersDeclarations(QList<MethodDeclaration
 
         foreach(SchemaItem* item, schema[key])
         {
-            if(this->_manualitems.contains(item->name()))
-                continue;
-
             MethodDeclarationStatement* mds = new MethodDeclarationStatement("void", "decompile_" + TypeUtils::apiCall(item->ctor()), MethodDeclarationStatement::STATIC);
             mds->setVisibility(MethodDeclarationStatement::PRIVATE);
             mds->addArgument("MTProtoDecompiler*", "thethis");
@@ -163,9 +162,6 @@ void DecompilerGenerator::compileDispatchersDefinitions(ClassDefinitionStatement
 
         foreach(SchemaItem* item, schema[key])
         {
-            if(this->_manualitems.contains(item->name()))
-                continue;
-
             cdef->method("decompile_" + TypeUtils::apiCall(item->ctor()), [this, item, key, schema](QString& body) {
                 if(key == "functions") {
                     this->functionDispatcher(body, item, schema);
@@ -470,6 +466,14 @@ void DecompilerGenerator::generateDecompiler()
         ifs = IfStatement("ctor");
 
         ifs.addIf("==", "TLTypes::Vector", [](QString& body) {
+            body += "return;";
+        });
+
+        ifs.addIf("==", "TLTypes::BoolTrue", [](QString& body) {
+            body += "return;";
+        });
+
+        ifs.addIf("==", "TLTypes::BoolFalse", [](QString& body) {
             body += "return;";
         });
 
