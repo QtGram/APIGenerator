@@ -5,7 +5,17 @@
 
 SchemaTokenizer::SchemaTokenizer(bool mtprotomode): _mtprotomode(mtprotomode)
 {
+    if(!this->_mtprotomode)
+        return;
 
+    this->_fieldisbytes << "pq";
+    this->_fieldisbytes << "p";
+    this->_fieldisbytes << "q";
+    this->_fieldisbytes << "encrypted_answer";
+    this->_fieldisbytes << "encrypted_data";
+    this->_fieldisbytes << "dh_prime";
+    this->_fieldisbytes << "g_a";
+    this->_fieldisbytes << "g_b";
 }
 
 SchemaTokenizer::State SchemaTokenizer::tokenize(const QString &line, SchemaItem **item, bool infunctionsection)
@@ -67,7 +77,8 @@ SchemaTokenizer::State SchemaTokenizer::tokenizeFields(const QString &fieldlist,
             if(TypeUtils::isBareType(rm.captured(3)))
                 attributes |= SchemaItem::BARE_TYPE;
 
-            (*item)->addField(TypeUtils::fullType(rm.captured(3)), field.first(), rm.captured(1), attributes | extrattributes, rm.captured(2).toInt());
+            (*item)->addField(TypeUtils::fullType(rm.captured(3), true, this->_fieldisbytes.contains(field.first())),
+                              field.first(), rm.captured(1), attributes | extrattributes, rm.captured(2).toInt());
             continue;
         }
 
@@ -81,7 +92,8 @@ SchemaTokenizer::State SchemaTokenizer::tokenizeFields(const QString &fieldlist,
             if(TypeUtils::isBareType(rm.captured(1)))
                 attributes |= SchemaItem::BARE_TYPE;
 
-            (*item)->addField(TypeUtils::fullType(rm.captured(1)), field.first(), attributes | extrattributes);
+            (*item)->addField(TypeUtils::fullType(rm.captured(1), true, this->_fieldisbytes.contains(field.first())),
+                              field.first(), attributes | extrattributes);
             continue;
         }
 
@@ -90,11 +102,13 @@ SchemaTokenizer::State SchemaTokenizer::tokenizeFields(const QString &fieldlist,
 
         if(rm.hasMatch())
         {
-            (*item)->addField(TypeUtils::fullType(rm.captured(3)), field.first(), rm.captured(1), SchemaItem::FLAG | extrattributes, rm.captured(2).toInt());
+            (*item)->addField(TypeUtils::fullType(rm.captured(3), true, this->_fieldisbytes.contains(field.first())),
+                              field.first(), rm.captured(1), SchemaItem::FLAG | extrattributes, rm.captured(2).toInt());
             continue;
         }
 
-        (*item)->addField(TypeUtils::fullType(field.last()), field.first(), extrattributes);
+        (*item)->addField(TypeUtils::fullType(field.last(), true, this->_fieldisbytes.contains(field.first())),
+                          field.first(), extrattributes);
     }
 
     return SchemaTokenizer::OK;

@@ -2,6 +2,7 @@
 #define SCHEMATOKENIZER_H
 
 #include <QString>
+#include <QSet>
 #include "schemaitem.h"
 
 class SchemaTokenizer
@@ -19,6 +20,7 @@ class SchemaTokenizer
 
     private:
         bool _mtprotomode;
+        QSet<QString> _fieldisbytes;
 };
 
 #endif // SCHEMATOKENIZER_H

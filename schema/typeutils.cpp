@@ -29,9 +29,9 @@ QString TypeUtils::apiCall(const QString &name)
     return name.at(0).toLower() + name.mid(1);
 }
 
-QString TypeUtils::fullType(const QString &ns, const QString &type, bool firstupper)
+QString TypeUtils::fullType(const QString &ns, const QString &type, bool firstupper, bool stringisbytes)
 {
-    QString t = TypeUtils::cppType(type.startsWith("%") ? type.mid(1) : type);
+    QString t = TypeUtils::cppType(type.startsWith("%") ? type.mid(1) : type, stringisbytes);
 
     if(ns.isEmpty())
         return TypeUtils::camelCase(t, firstupper);
@@ -39,20 +39,20 @@ QString TypeUtils::fullType(const QString &ns, const QString &type, bool firstup
     return TypeUtils::camelCase(ns, firstupper) + TypeUtils::camelCase(t, true);
 }
 
-QString TypeUtils::fullType(const QString &nstype, bool firstupper)
+QString TypeUtils::fullType(const QString &nstype, bool firstupper, bool stringisbytes)
 {
     if(nstype.contains("."))
     {
         QStringList sl = nstype.split(".");
         Q_ASSERT(sl.length() == 2);
 
-        return TypeUtils::fullType(sl.first(), sl.last(), firstupper);
+        return TypeUtils::fullType(sl.first(), sl.last(), firstupper, stringisbytes);
     }
 
-    return TypeUtils::fullType(QString(), nstype, firstupper);
+    return TypeUtils::fullType(QString(), nstype, firstupper, stringisbytes);
 }
 
-QString TypeUtils::cppType(const QString &type)
+QString TypeUtils::cppType(const QString &type, bool stringisbytes)
 {
     if((type == "#") || (type == "int"))
         return "TLInt";
@@ -75,10 +75,10 @@ QString TypeUtils::cppType(const QString &type)
     if(type == "Bool")
         return "TLBool";
 
-    if(type == "string")
+    if((type == "string") && !stringisbytes)
         return "TLString";
 
-    if(type == "bytes")
+    if((type == "bytes") || (stringisbytes && (type == "string")))
         return "TLBytes";
 
     return type;
